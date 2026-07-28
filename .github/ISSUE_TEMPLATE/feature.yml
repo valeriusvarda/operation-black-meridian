@@ -1,8 +1,6 @@
-name: Feature workstream
-description: Plan a scoped analytical or engineering change
+name: Feature request
+description: Propose a scoped analytical or engineering change
 title: "Feature: "
-labels: []
-assignees: []
 
 body:
   - type: markdown
@@ -15,7 +13,7 @@ body:
     id: objective
     attributes:
       label: Objective
-      description: State the concrete outcome this workstream must produce.
+      description: State the concrete outcome this feature must produce.
       placeholder: Build a deterministic synthetic transaction generator.
     validations:
       required: true
@@ -24,7 +22,7 @@ body:
     id: scope
     attributes:
       label: Scope
-      description: List the files, components, or behaviors included in the work.
+      description: List the files, components, or behaviors included in the feature.
       placeholder: |
         - define account profiles
         - generate baseline transactions
@@ -69,13 +67,14 @@ body:
       required: true
 
   - type: checkboxes
-    id: policy
+    id: contribution-policy
     attributes:
       label: Contribution policy
+      description: Confirm the repository quality requirements.
       options:
         - label: I will keep every created file in an isolated commit.
           required: true
-        - label: I will run the repository validation suite before opening the PR.
+        - label: I will run the validation suite before opening the Pull Request.
           required: true
-        - label: I will provide real output evidence where the feature produces artifacts.
+        - label: I will provide real output evidence when the feature produces artifacts.
           required: true

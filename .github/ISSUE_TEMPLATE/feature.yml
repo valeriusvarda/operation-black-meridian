@@ -1,0 +1,81 @@
+name: Feature workstream
+description: Plan a scoped analytical or engineering change
+title: "Feature: "
+labels: []
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for analytical capabilities, pipeline components,
+        visual intelligence outputs, and engineering improvements.
+
+  - type: input
+    id: objective
+    attributes:
+      label: Objective
+      description: State the concrete outcome this workstream must produce.
+      placeholder: Build a deterministic synthetic transaction generator.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List the files, components, or behaviors included in the work.
+      placeholder: |
+        - define account profiles
+        - generate baseline transactions
+        - inject controlled anomaly regimes
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define the observable conditions required to close this Issue.
+      placeholder: |
+        - identical seeds produce identical datasets
+        - schema validation passes
+        - smoke tests pass
+    validations:
+      required: true
+
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Primary evidence
+      description: Select the main artifact that will demonstrate completion.
+      options:
+        - Automated tests
+        - Generated dataset
+        - Static visualization
+        - Interactive visualization
+        - Analytical report
+        - Performance measurement
+    validations:
+      required: true
+
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Known limitations
+      description: Record assumptions, exclusions, and intentionally deferred work.
+      placeholder: The first implementation uses synthetic data only.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: policy
+    attributes:
+      label: Contribution policy
+      options:
+        - label: I will keep every created file in an isolated commit.
+          required: true
+        - label: I will run the repository validation suite before opening the PR.
+          required: true
+        - label: I will provide real output evidence where the feature produces artifacts.
+          required: true

@@ -1,0 +1,80 @@
+name: Feature request
+description: Propose a scoped analytical or engineering change
+title: "Feature: "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for analytical capabilities, pipeline components,
+        visual intelligence outputs, and engineering improvements.
+
+  - type: input
+    id: objective
+    attributes:
+      label: Objective
+      description: State the concrete outcome this feature must produce.
+      placeholder: Build a deterministic synthetic transaction generator.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List the files, components, or behaviors included in the feature.
+      placeholder: |
+        - define account profiles
+        - generate baseline transactions
+        - inject controlled anomaly regimes
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define the observable conditions required to close this Issue.
+      placeholder: |
+        - identical seeds produce identical datasets
+        - schema validation passes
+        - smoke tests pass
+    validations:
+      required: true
+
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Primary evidence
+      description: Select the main artifact that will demonstrate completion.
+      options:
+        - Automated tests
+        - Generated dataset
+        - Static visualization
+        - Interactive visualization
+        - Analytical report
+        - Performance measurement
+    validations:
+      required: true
+
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Known limitations
+      description: Record assumptions, exclusions, and intentionally deferred work.
+      placeholder: The first implementation uses synthetic data only.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution-policy
+    attributes:
+      label: Contribution policy
+      description: Confirm the repository quality requirements.
+      options:
+        - label: I will keep every created file in an isolated commit.
+          required: true
+        - label: I will run the validation suite before opening the Pull Request.
+          required: true
+        - label: I will provide real output evidence when the feature produces artifacts.
+          required: true

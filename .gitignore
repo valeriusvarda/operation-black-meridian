@@ -1,0 +1,72 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+
+# Python environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment configuration
+.env
+.env.*
+!.env.example
+
+# Package and build outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# uv
+.uv-cache/
+
+# Testing and quality tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated datasets
+data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
+data/processed/*.parquet
+data/exports/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/exports/.gitkeep
+
+# Generated reports
+reports/generated/*
+!reports/generated/.gitkeep
+
+# Temporary analytical artifacts
+*.tmp
+*.bak
+*.log
+.cache/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini

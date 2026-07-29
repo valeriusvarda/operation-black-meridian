@@ -37,14 +37,17 @@ coverage.xml
 .ipynb_checkpoints/
 
 # Generated datasets
+# Generated datasets
 data/raw/*.csv
 data/raw/*.parquet
+data/raw/external/
 data/processed/*.csv
 data/processed/*.parquet
 data/exports/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/exports/.gitkeep
+
 
 # Generated reports
 reports/generated/*

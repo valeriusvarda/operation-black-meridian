@@ -43,7 +43,6 @@ class FatfSnapshot(BaseModel):
     )
 
     source_name: Literal["Financial Action Task Force"] = "Financial Action Task Force"
-
     source_url: HttpUrl
     publication_date: date
     retrieved_at: datetime

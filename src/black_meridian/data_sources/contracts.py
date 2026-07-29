@@ -24,7 +24,10 @@ class FatfTier(StrEnum):
 class FatfJurisdiction(BaseModel):
     """One normalized jurisdiction classification."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+    )
 
     jurisdiction_name: str = Field(min_length=2)
     iso_alpha3: str = Field(pattern=r"^[A-Z]{3}$")
@@ -34,9 +37,13 @@ class FatfJurisdiction(BaseModel):
 class FatfSnapshot(BaseModel):
     """Provenance-rich snapshot of one FATF publication state."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+    )
 
     source_name: Literal["Financial Action Task Force"] = "Financial Action Task Force"
+
     source_url: HttpUrl
     publication_date: date
     retrieved_at: datetime
@@ -46,12 +53,16 @@ class FatfSnapshot(BaseModel):
     @field_validator("retrieved_at")
     @classmethod
     def require_timezone(cls, value: datetime) -> datetime:
+        """Require an explicit timezone for snapshot provenance."""
+
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("retrieved_at must be timezone-aware")
 
         return value
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def record_count(self) -> int:
+        """Return the number of normalized jurisdiction records."""
+
         return len(self.records)

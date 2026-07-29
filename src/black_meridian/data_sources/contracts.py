@@ -51,7 +51,7 @@ class FatfSnapshot(BaseModel):
 
         return value
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def record_count(self) -> int:
         return len(self.records)

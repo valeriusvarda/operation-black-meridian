@@ -1,0 +1,83 @@
+name: Quality
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+    merge_group:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: quality-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    validate:
+        name: validate
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v6
+
+            - name: Install uv and Python
+              uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+              with:
+                  python-version: "3.13"
+                  enable-cache: true
+                  cache-dependency-glob: "uv.lock"
+
+            - name: Synchronize locked environment
+              run: uv sync --locked --all-groups
+
+            - name: Prepare evidence directories
+              run: |
+                  mkdir -p reports/test-results
+                  mkdir -p reports/coverage
+
+            - name: Run Ruff lint
+              run: uv run ruff check . --output-format=github
+
+            - name: Verify Ruff formatting
+              run: uv run ruff format --check .
+
+            - name: Run strict type analysis
+              run: uv run mypy src
+
+            - name: Run tests with coverage
+              run: |
+                  uv run pytest \
+                    --junitxml=reports/test-results/junit.xml \
+                    --cov=black_meridian \
+                    --cov-report=term-missing \
+                    --cov-report=xml:reports/coverage/coverage.xml
+
+            - name: Build distribution artifacts
+              run: uv build
+
+            - name: Upload quality evidence
+              if: ${{ always() }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: quality-evidence-${{ github.sha }}
+                  path: |
+                      reports/test-results/
+                      reports/coverage/
+                  if-no-files-found: warn
+                  retention-days: 14
+
+            - name: Upload package distributions
+              if: ${{ success() }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: package-distributions-${{ github.sha }}
+                  path: dist/
+                  if-no-files-found: error
+                  retention-days: 14

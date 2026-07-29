@@ -15,6 +15,7 @@ keywords = [
 ]
 
 dependencies = [
+    "httpx>=0.28",
     "matplotlib>=3.9",
     "networkx>=3.4",
     "numpy>=2.1",

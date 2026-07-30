@@ -82,6 +82,18 @@ def test_publication_fixture_parses_expected_structure() -> None:
     )
 
 
+def test_post_list_non_jurisdiction_link_is_excluded() -> None:
+    html = FIXTURE_PATH.read_text(encoding="utf-8")
+
+    publication = parse_fatf_publication(html)
+
+    jurisdiction_names = (
+        publication.call_for_action_jurisdictions + publication.increased_monitoring_jurisdictions
+    )
+
+    assert "This unrelated link must not be collected as a jurisdiction" not in jurisdiction_names
+
+
 @pytest.mark.parametrize("html", ["", " \n\t"])
 def test_empty_html_is_rejected(html: str) -> None:
     with pytest.raises(

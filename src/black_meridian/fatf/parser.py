@@ -6,12 +6,14 @@ import re
 from datetime import date
 from html.parser import HTMLParser
 from typing import Self
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from black_meridian.data_sources.contracts import FatfTier
 
 _HEADING_TAGS = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
+_COUNTRY_DETAIL_PATH_PREFIX = "/en/countries/detail/"
 
 _CALL_FOR_ACTION_HEADING = "high-risk jurisdictions subject to a call for action"
 _INCREASED_MONITORING_HEADING = "jurisdictions under increased monitoring"
@@ -98,6 +100,7 @@ class _FatfLandingPageParser(HTMLParser):
         self._heading_parts: list[str] = []
         self._capturing_anchor = False
         self._anchor_parts: list[str] = []
+        self._anchor_href: str | None = None
 
         self._heading_counts: dict[FatfTier, int] = {tier: 0 for tier in FatfTier}
         self._statement_dates: dict[FatfTier, list[date]] = {tier: [] for tier in FatfTier}
@@ -110,8 +113,6 @@ class _FatfLandingPageParser(HTMLParser):
     ) -> None:
         """Begin structural heading or section-anchor capture."""
 
-        del attrs
-
         normalized_tag = tag.casefold()
 
         if normalized_tag in _HEADING_TAGS:
@@ -123,6 +124,10 @@ class _FatfLandingPageParser(HTMLParser):
         if normalized_tag == "a" and self._current_tier is not None:
             self._capturing_anchor = True
             self._anchor_parts = []
+            self._anchor_href = next(
+                (value for name, value in attrs if name.casefold() == "href"),
+                None,
+            )
 
     def handle_endtag(self, tag: str) -> None:
         """Finalize structural heading or anchor capture."""
@@ -131,11 +136,14 @@ class _FatfLandingPageParser(HTMLParser):
 
         if normalized_tag == "a" and self._capturing_anchor:
             anchor_text = _normalize_text(self._anchor_parts)
+            anchor_href = self._anchor_href
+
             self._capturing_anchor = False
             self._anchor_parts = []
+            self._anchor_href = None
 
             if anchor_text:
-                self._record_anchor(anchor_text)
+                self._record_anchor(anchor_text, anchor_href)
 
         if normalized_tag == self._heading_tag:
             heading_text = _normalize_text(self._heading_parts)
@@ -208,7 +216,11 @@ class _FatfLandingPageParser(HTMLParser):
         self._current_tier = tier
         self._heading_counts[tier] += 1
 
-    def _record_anchor(self, text: str) -> None:
+    def _record_anchor(
+        self,
+        text: str,
+        href: str | None,
+    ) -> None:
         if self._current_tier is None:
             return
 
@@ -219,6 +231,9 @@ class _FatfLandingPageParser(HTMLParser):
             return
 
         if not self._statement_dates[self._current_tier]:
+            return
+
+        if not _is_jurisdiction_href(href):
             return
 
         self._jurisdiction_names[self._current_tier].append(text)
@@ -245,6 +260,20 @@ def parse_fatf_publication(html: str) -> FatfPublication:
 
 def _normalize_text(parts: list[str]) -> str:
     return " ".join("".join(parts).split())
+
+
+def _is_jurisdiction_href(href: str | None) -> bool:
+    if href is None:
+        return False
+
+    normalized_path = urlparse(href).path.casefold()
+
+    if not normalized_path.startswith(_COUNTRY_DETAIL_PATH_PREFIX):
+        return False
+
+    detail_slug = normalized_path.removeprefix(_COUNTRY_DETAIL_PATH_PREFIX)
+
+    return detail_slug.endswith(".html") and detail_slug != ".html" and "/" not in detail_slug
 
 
 def _extract_date(text: str) -> date | None:

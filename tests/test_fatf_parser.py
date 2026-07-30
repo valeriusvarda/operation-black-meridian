@@ -16,7 +16,8 @@ INCREASED_MONITORING_HEADING = "Jurisdictions under Increased Monitoring"
 
 def _jurisdiction_links(names: tuple[str, ...]) -> str:
     return "\n".join(
-        f'<a href="/jurisdictions/{index}">{name}</a>' for index, name in enumerate(names)
+        f'<a href="/en/countries/detail/synthetic-{index}.html">{name}</a>'
+        for index, name in enumerate(names)
     )
 
 

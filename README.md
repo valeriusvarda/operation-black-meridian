@@ -2,13 +2,13 @@
 
 # Operation Black Meridian
 
-### Provenance-Aware Financial Intelligence Engineering
+### Provenance-Aware Operational Financial Intelligence
 
 [![Quality](https://github.com/valeriusvarda/operation-black-meridian/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/valeriusvarda/operation-black-meridian/actions/workflows/quality.yml)
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![Typing](https://img.shields.io/badge/Typing-Strict-2F74C0)
 ![Data](https://img.shields.io/badge/Data-Official%20Sources-111827)
-![Status](https://img.shields.io/badge/Status-Active%20Research-0F766E)
+![Status](https://img.shields.io/badge/Status-Product%20Development-0F766E)
 
 **Official-source acquisition · Cryptographic provenance · Jurisdiction intelligence · Behavioral risk · Explainable analysis**
 
@@ -18,9 +18,9 @@
 
 ## Mission
 
-**Operation Black Meridian** is a financial intelligence engineering laboratory for
-transforming official external data and controlled transaction behavior into reproducible,
-explainable, and reviewable analytical evidence.
+**Operation Black Meridian** is a provenance-aware operational financial-intelligence
+platform for transforming official external data and controlled transaction behavior into
+reproducible, explainable, and reviewable risk evidence.
 
 The project is built around one central requirement:
 
@@ -115,8 +115,9 @@ sequenceDiagram
 | Source discovery CLI | Implemented |
 | Approved-source retrieval CLI | Implemented |
 | FATF jurisdiction data contracts | Implemented |
-| Live FATF HTML parser | In progress |
-| ISO alpha-3 jurisdiction normalization | Planned |
+| Live FATF HTML parser | Implemented |
+| FATF parser public API | Implemented |
+| ISO alpha-3 jurisdiction normalization | In progress |
 | FATF CSV and JSON exports | Planned |
 | Canonical OFAC entity models | Planned |
 | GLEIF entity enrichment | Planned |
@@ -263,8 +264,15 @@ operation-black-meridian/
 │       │   ├── fetcher.py
 │       │   ├── models.py
 │       │   └── registry.py
+│       ├── fatf/
+│       │   ├── __init__.py
+│       │   └── parser.py
 │       └── cli.py
 ├── tests/
+│   ├── fixtures/
+│   │   └── fatf/
+│   │       └── publication_page.html
+│   └── test_fatf_parser.py
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
@@ -367,8 +375,8 @@ Pull Requests are expected to document:
 - [x] Integrity-aware source acquisition
 - [x] Hash-backed provenance manifests
 - [x] FATF jurisdiction contracts
-- [ ] Live FATF publication retrieval
-- [ ] FATF HTML parsing
+- [x] Live FATF publication retrieval
+- [x] FATF HTML parsing
 - [ ] ISO alpha-3 jurisdiction normalization
 - [ ] FATF CSV and JSON evidence exports
 - [ ] Canonical OFAC sanctions models
@@ -385,7 +393,7 @@ Pull Requests are expected to document:
 
 ## Analytical Limitations
 
-Operation Black Meridian is an engineering and research project.
+Operation Black Meridian is an engineering product under active development.
 
 It is not:
 

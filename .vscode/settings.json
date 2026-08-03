@@ -19,6 +19,11 @@
             "source.organizeImports.ruff": "explicit"
         }
     },
+    "cSpell.words": [
+        "fatf",
+        "gleif",
+        "ofac"
+    ],
     "files.exclude": {
         "**/__pycache__": true,
         "**/.mypy_cache": true,

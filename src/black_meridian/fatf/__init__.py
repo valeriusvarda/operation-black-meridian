@@ -5,6 +5,10 @@ from black_meridian.data_sources.contracts import (
     FatfSnapshot,
     FatfTier,
 )
+from black_meridian.fatf.normalizer import (
+    FatfNormalizationError,
+    normalize_fatf_publication,
+)
 from black_meridian.fatf.parser import (
     FatfParseError,
     FatfPublication,
@@ -13,9 +17,11 @@ from black_meridian.fatf.parser import (
 
 __all__ = [
     "FatfJurisdiction",
+    "FatfNormalizationError",
     "FatfParseError",
     "FatfPublication",
     "FatfSnapshot",
     "FatfTier",
+    "normalize_fatf_publication",
     "parse_fatf_publication",
 ]

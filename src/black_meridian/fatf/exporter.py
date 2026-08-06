@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from io import StringIO
+from pathlib import Path
 from typing import Final
 
 from black_meridian.data_sources.contracts import FatfSnapshot
@@ -65,3 +67,41 @@ def serialize_fatf_json(snapshot: FatfSnapshot) -> bytes:
     )
 
     return f"{serialized}\n".encode()
+
+
+def write_fatf_csv(snapshot: FatfSnapshot, destination: Path) -> Path:
+    """Write deterministic FATF CSV evidence through atomic replacement."""
+
+    return _write_bytes_atomically(
+        destination,
+        serialize_fatf_csv(snapshot),
+    )
+
+
+def write_fatf_json(snapshot: FatfSnapshot, destination: Path) -> Path:
+    """Write deterministic FATF JSON evidence through atomic replacement."""
+
+    return _write_bytes_atomically(
+        destination,
+        serialize_fatf_json(snapshot),
+    )
+
+
+def _write_bytes_atomically(destination: Path, payload: bytes) -> Path:
+    """Write bytes to a sibling partial file and atomically replace the destination."""
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    partial_path = destination.with_name(f".{destination.name}.partial")
+
+    try:
+        with partial_path.open("wb") as output:
+            output.write(payload)
+            output.flush()
+            os.fsync(output.fileno())
+
+        os.replace(partial_path, destination)
+    except Exception:
+        partial_path.unlink(missing_ok=True)
+        raise
+
+    return destination

@@ -727,4 +727,3 @@ GitHub: [@valeriusvarda](https://github.com/valeriusvarda)
 **Source-aware. Provenance-bound. Behavior-focused. Evidence-driven.**
 
 </div>
-

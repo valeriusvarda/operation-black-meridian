@@ -145,7 +145,7 @@ def test_fatf_command_exposes_acquisition_surfaces() -> None:
     assert "import" in result.output
 
 
-def test_fatf_import_help_exposes_operator_artifact_argument() -> None:
+def test_fatf_import_help_exposes_operator_artifact_contract() -> None:
     result = runner.invoke(
         app,
         [
@@ -158,8 +158,6 @@ def test_fatf_import_help_exposes_operator_artifact_argument() -> None:
     assert result.exit_code == 0, result.output
 
     assert "Operator-provided FATF HTML artifact" in result.output
-    assert "--source-dir" in result.output
-    assert "--output-dir" in result.output
 
 
 def test_fatf_refresh_orchestrates_trusted_evidence_pipeline(

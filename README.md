@@ -234,7 +234,7 @@ The FATF public site currently presents an automated Cloudflare challenge to the
 
 The project does **not** treat anti-bot circumvention as a trusted engineering solution.
 
-The target design is a controlled operator-assisted import path that preserves:
+The implemented controlled operator-assisted import path preserves:
 
 - approved source identity,
 - exact imported bytes,
@@ -244,13 +244,15 @@ The target design is a controlled operator-assisted import path that preserves:
 - destination,
 - and explicit `operator_import` provenance.
 
+Operator-assisted acquisition is recorded explicitly as `operator_import`. It does not claim an HTTP-observed redirect or server response for the imported artifact.
+
 The intelligence pipeline remains downstream of that acquisition boundary.
 
 ---
 
 ## FATF Jurisdiction Intelligence
 
-The FATF workstream is the first complete official-source intelligence adapter being built through the platform.
+The FATF workstream is the first complete official-source intelligence adapter implemented through the platform.
 
 ```text
 OFFICIAL FATF PUBLICATION
@@ -296,7 +298,7 @@ CLI ORCHESTRATION
 | Offline CLI regression coverage | Implemented |
 | Acquisition-method provenance | Implemented |
 | Direct live FATF HTTP acquisition | Externally challenge-protected |
-| Controlled operator-assisted import | Current hardening target |
+| Controlled operator-assisted import | Implemented |
 
 The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF jurisdiction risk intelligence**.
 
@@ -326,7 +328,7 @@ The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF 
 | FATF parser / normalizer / exporter | Implemented |
 | FATF integrity-reconciliation workflow | Implemented |
 | FATF CLI orchestration | Implemented |
-| Challenge-aware operator import | In progress |
+| Challenge-aware operator import | Implemented |
 | Canonical OFAC intelligence models | Planned |
 | GLEIF entity enrichment | Planned |
 | Transaction-behavior engine | Planned |
@@ -336,7 +338,6 @@ The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF 
 | Visual intelligence suite | Planned |
 
 ---
-
 ## Command Surface
 
 ### Inspect the application
@@ -362,6 +363,7 @@ uv run black-meridian sources fetch ofac_sdn_csv
 ```bash
 uv run black-meridian fatf --help
 uv run black-meridian fatf refresh --help
+uv run black-meridian fatf import --help
 ```
 
 ### Direct FATF refresh path
@@ -370,9 +372,18 @@ uv run black-meridian fatf refresh --help
 uv run black-meridian fatf refresh
 ```
 
-The command orchestrates trusted acquisition, provenance manifest creation, integrity reconciliation, normalization, and evidence generation.
+The direct path retrieves the approved FATF source through the trusted HTTP acquisition boundary, records `direct_http` provenance, persists the acquisition manifest, reconciles source integrity, and generates validated evidence.
 
-For challenge-protected endpoints, the upstream site may reject direct HTTP acquisition. The operator-assisted boundary exists to solve that source-access problem without corrupting provenance semantics.
+### Operator-assisted FATF import path
+
+```bash
+uv run black-meridian fatf import \
+  /path/to/fatf-black-and-grey-lists.html
+```
+
+The operator-assisted path imports the exact operator-provided bytes into canonical trusted storage, records `operator_import` provenance, persists the acquisition manifest, and executes the same integrity-checked FATF evidence workflow.
+
+This path does not bypass upstream access controls and does not represent the imported artifact as a direct HTTP retrieval.
 
 ---
 
@@ -470,6 +481,7 @@ operation-black-meridian/
 │       │   ├── __init__.py
 │       │   ├── contracts.py
 │       │   ├── fetcher.py
+│       │   ├── importer.py
 │       │   ├── models.py
 │       │   └── registry.py
 │       ├── fatf/
@@ -487,6 +499,7 @@ operation-black-meridian/
 │   ├── test_fatf_parser.py
 │   ├── test_fatf_workflow.py
 │   ├── test_package_contract.py
+│   ├── test_source_importer.py
 │   └── test_source_registry.py
 ├── pyproject.toml
 ├── uv.lock
@@ -645,7 +658,7 @@ The goal is to make them **observable, testable, and reviewable**.
 - [x] Integrity-aware HTTP acquisition
 - [x] SHA-256 provenance
 - [x] Acquisition-method model
-- [ ] Operator-assisted official-source import
+- [x] Operator-assisted official-source import
 
 ### Phase II — Jurisdiction Intelligence
 
@@ -656,7 +669,7 @@ The goal is to make them **observable, testable, and reviewable**.
 - [x] Deterministic CSV / JSON evidence
 - [x] Integrity-reconciled workflow
 - [x] CLI orchestration
-- [ ] Complete live FATF evidence cycle through operator-import fallback
+- [x] Complete live FATF evidence cycle through operator-import fallback
 
 ### Phase III — Entity Intelligence
 

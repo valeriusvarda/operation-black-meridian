@@ -6,22 +6,43 @@ from typing import Literal, Self
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
 
-SourceFormat = Literal["csv", "html", "json", "xml"]
+SourceFormat = Literal[
+    "csv",
+    "html",
+    "json",
+    "xml",
+]
+
+AcquisitionMethod = Literal[
+    "direct_http",
+    "operator_import",
+]
 
 
 class DataSource(BaseModel):
     """Immutable definition of an approved external data source."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
 
     key: str = Field(pattern=r"^[a-z0-9_]+$")
+
     name: str = Field(min_length=1)
+
     publisher: str = Field(min_length=1)
+
     url: AnyHttpUrl
+
     source_page: AnyHttpUrl
+
     format: SourceFormat
+
     filename: str = Field(pattern=r"^[A-Za-z0-9._-]+$")
+
     description: str = Field(min_length=1)
+
     refresh_policy: str = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -29,6 +50,7 @@ class DataSource(BaseModel):
         """Require the declared filename to match the source format."""
 
         expected_suffix = f".{self.format}"
+
         actual_suffix = Path(self.filename).suffix.lower()
 
         if actual_suffix != expected_suffix:
@@ -38,21 +60,35 @@ class DataSource(BaseModel):
 
 
 class SourceSnapshot(BaseModel):
-    """Immutable provenance record for one downloaded source snapshot."""
+    """Immutable provenance record for one acquired source snapshot."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
 
     source_key: str = Field(pattern=r"^[a-z0-9_]+$")
+
+    acquisition_method: AcquisitionMethod = "direct_http"
+
     requested_url: AnyHttpUrl
+
     resolved_url: AnyHttpUrl
+
     fetched_at: datetime
+
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
     byte_size: int = Field(ge=0)
+
     content_type: str | None = None
+
     destination: str = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_timezone_aware_timestamp(self) -> Self:
+    def validate_timezone_aware_timestamp(
+        self,
+    ) -> Self:
         """Reject provenance timestamps without explicit timezone information."""
 
         if self.fetched_at.tzinfo is None or self.fetched_at.utcoffset() is None:

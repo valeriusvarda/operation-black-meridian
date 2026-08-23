@@ -39,9 +39,13 @@ def fetch_source(
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be greater than zero.")
 
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     partial_path = destination.with_name(f".{destination.name}.partial")
+
     digest = sha256()
     byte_size = 0
     resolved_url = str(source.url)
@@ -57,8 +61,12 @@ def fetch_source(
     )
 
     try:
-        with urlopen(request, timeout=timeout_seconds) as response:
+        with urlopen(
+            request,
+            timeout=timeout_seconds,
+        ) as response:
             resolved_url = response.geturl()
+
             content_type = response.headers.get("Content-Type")
 
             with partial_path.open("wb") as output:
@@ -69,20 +77,28 @@ def fetch_source(
                         break
 
                     output.write(chunk)
+
                     digest.update(chunk)
+
                     byte_size += len(chunk)
 
                 output.flush()
+
                 os.fsync(output.fileno())
 
-        os.replace(partial_path, destination)
+        os.replace(
+            partial_path,
+            destination,
+        )
 
     except Exception:
         partial_path.unlink(missing_ok=True)
+
         raise
 
     return SourceSnapshot(
         source_key=source.key,
+        acquisition_method="direct_http",
         requested_url=source.url,
         resolved_url=resolved_url,
         fetched_at=datetime.now(UTC),
@@ -100,15 +116,25 @@ def write_snapshot_manifest(
     """Persist snapshot provenance beside the downloaded source atomically."""
 
     manifest_path = destination.with_name(f"{destination.name}.manifest.json")
+
     temporary_path = manifest_path.with_name(f".{manifest_path.name}.partial")
 
     payload = snapshot.model_dump_json(indent=2) + "\n"
 
     try:
-        temporary_path.write_text(payload, encoding="utf-8")
-        os.replace(temporary_path, manifest_path)
+        temporary_path.write_text(
+            payload,
+            encoding="utf-8",
+        )
+
+        os.replace(
+            temporary_path,
+            manifest_path,
+        )
+
     except Exception:
         temporary_path.unlink(missing_ok=True)
+
         raise
 
     return manifest_path

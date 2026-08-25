@@ -79,7 +79,7 @@ class SourceSnapshot(BaseModel):
 
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
-    byte_size: int = Field(ge=0)
+    byte_size: int = Field(ge=1)
 
     content_type: str | None = None
 

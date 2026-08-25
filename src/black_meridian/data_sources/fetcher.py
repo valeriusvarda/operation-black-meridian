@@ -82,6 +82,11 @@ def fetch_source(
 
                     byte_size += len(chunk)
 
+                if byte_size == 0:
+                    raise OSError(
+                        f"Source acquisition returned an empty response for '{source.key}'."
+                    )
+
                 output.flush()
 
                 os.fsync(output.fileno())
@@ -92,7 +97,9 @@ def fetch_source(
         )
 
     except Exception:
-        partial_path.unlink(missing_ok=True)
+        partial_path.unlink(
+            missing_ok=True,
+        )
 
         raise
 
@@ -133,7 +140,9 @@ def write_snapshot_manifest(
         )
 
     except Exception:
-        temporary_path.unlink(missing_ok=True)
+        temporary_path.unlink(
+            missing_ok=True,
+        )
 
         raise
 

@@ -1,3 +1,5 @@
+"""Regression tests for the approved official-source registry."""
+
 from urllib.parse import urlparse
 
 import pytest
@@ -47,6 +49,25 @@ def test_registry_filenames_are_unique() -> None:
     assert len(filenames) == len(set(filenames))
 
 
+def test_ofac_consolidated_source_targets_primary_legacy_csv() -> None:
+    source = get_source("ofac_consolidated_csv")
+
+    assert str(source.url).endswith("/api/PublicationPreview/exports/CONS_PRIM.CSV")
+
+    assert source.filename == "cons_prim.csv"
+
+
+def test_ofac_sdn_source_targets_primary_legacy_csv() -> None:
+    source = get_source("ofac_sdn_csv")
+
+    assert str(source.url).endswith("/api/PublicationPreview/exports/SDN.CSV")
+
+    assert source.filename == "sdn.csv"
+
+
 def test_unknown_source_is_rejected() -> None:
-    with pytest.raises(KeyError, match="Unknown source"):
+    with pytest.raises(
+        KeyError,
+        match="Unknown source",
+    ):
         get_source("unapproved_source")

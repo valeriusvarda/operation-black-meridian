@@ -62,14 +62,13 @@ _SOURCE_MAP: dict[str, DataSource] = {
         publisher="U.S. Department of the Treasury — OFAC",
         url=_http_url(
             "https://sanctionslistservice.ofac.treas.gov/"
-            "api/PublicationPreview/exports/CONSOLIDATED.CSV"
+            "api/PublicationPreview/exports/CONS_PRIM.CSV"
         ),
         source_page=_http_url("https://ofac.treasury.gov/sanctions-list-service"),
         format="csv",
-        filename="consolidated.csv",
+        filename="cons_prim.csv",
         description=(
-            "Official consolidated data file covering OFAC sanctions lists "
-            "outside the primary SDN publication."
+            "Official consolidated primary data file covering OFAC non-SDN sanctions lists."
         ),
         refresh_policy=(
             "Refresh before sanctions-screening analysis and preserve "

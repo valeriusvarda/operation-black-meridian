@@ -56,7 +56,8 @@ def parse_ofac_primary_snapshot(
         StringIO(
             csv_text,
             newline="",
-        )
+        ),
+        strict=True,
     )
 
     try:
@@ -148,7 +149,8 @@ def _validate_source_key(
     raise OfacParseError(
         "Snapshot source_key must identify an "
         "approved OFAC source: "
-        "ofac_sdn_csv or ofac_consolidated_csv."
+        "ofac_sdn_csv or "
+        "ofac_consolidated_csv."
     )
 
 

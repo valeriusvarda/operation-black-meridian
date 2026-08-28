@@ -11,11 +11,21 @@ from black_meridian.data_sources.models import DataSource
 
 _HTTP_URL_ADAPTER: TypeAdapter[AnyHttpUrl] = TypeAdapter(AnyHttpUrl)
 
+_OFAC_EXPORT_BASE = "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports"
+
+_OFAC_SOURCE_PAGE = "https://ofac.treasury.gov/sanctions-list-service"
+
 
 def _http_url(value: str) -> AnyHttpUrl:
     """Validate a string and return a statically typed HTTP URL."""
 
     return _HTTP_URL_ADAPTER.validate_python(value)
+
+
+def _ofac_export_url(filename: str) -> AnyHttpUrl:
+    """Return one approved OFAC Sanctions List Service export URL."""
+
+    return _http_url(f"{_OFAC_EXPORT_BASE}/{filename}")
 
 
 _SOURCE_MAP: dict[str, DataSource] = {
@@ -56,41 +66,138 @@ _SOURCE_MAP: dict[str, DataSource] = {
             "a snapshot manifest for every material analytical result."
         ),
     ),
+    "ofac_consolidated_addresses_csv": DataSource(
+        key="ofac_consolidated_addresses_csv",
+        name="OFAC Consolidated Non-SDN Address Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("CONS_ADD.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="cons_add.csv",
+        description=(
+            "Official address records linked to primary records in the "
+            "Consolidated Non-SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete Consolidated Non-SDN evidence series "
+            "and preserve independent source provenance."
+        ),
+    ),
+    "ofac_consolidated_aliases_csv": DataSource(
+        key="ofac_consolidated_aliases_csv",
+        name="OFAC Consolidated Non-SDN Alternate Identity Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("CONS_ALT.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="cons_alt.csv",
+        description=(
+            "Official alternate-identity records linked to primary records "
+            "in the Consolidated Non-SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete Consolidated Non-SDN evidence series "
+            "and preserve independent source provenance."
+        ),
+    ),
+    "ofac_consolidated_comments_csv": DataSource(
+        key="ofac_consolidated_comments_csv",
+        name="OFAC Consolidated Non-SDN Extended Comment Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("CONS_COMMENTS.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="cons_comments.csv",
+        description=(
+            "Official extended remarks records linked to primary records "
+            "in the Consolidated Non-SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete Consolidated Non-SDN evidence series "
+            "and preserve independent source provenance."
+        ),
+    ),
     "ofac_consolidated_csv": DataSource(
         key="ofac_consolidated_csv",
-        name="OFAC Consolidated Non-SDN List",
+        name="OFAC Consolidated Non-SDN Primary Records",
         publisher="U.S. Department of the Treasury — OFAC",
-        url=_http_url(
-            "https://sanctionslistservice.ofac.treas.gov/"
-            "api/PublicationPreview/exports/CONS_PRIM.CSV"
-        ),
-        source_page=_http_url("https://ofac.treasury.gov/sanctions-list-service"),
+        url=_ofac_export_url("CONS_PRIM.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
         format="csv",
         filename="cons_prim.csv",
         description=(
-            "Official consolidated primary data file covering OFAC non-SDN sanctions lists."
+            "Official primary records for OFAC's Consolidated Non-SDN "
+            "legacy CSV sanctions-list series."
         ),
         refresh_policy=(
-            "Refresh before sanctions-screening analysis and preserve "
-            "the exact digest used by each run."
+            "Acquire with the complete Consolidated Non-SDN evidence series "
+            "and preserve the exact digest used by each run."
+        ),
+    ),
+    "ofac_sdn_addresses_csv": DataSource(
+        key="ofac_sdn_addresses_csv",
+        name="OFAC SDN Address Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("ADD.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="sdn_add.csv",
+        description=(
+            "Official address records linked to primary records in the SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete SDN evidence series and preserve "
+            "independent source provenance."
+        ),
+    ),
+    "ofac_sdn_aliases_csv": DataSource(
+        key="ofac_sdn_aliases_csv",
+        name="OFAC SDN Alternate Identity Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("ALT.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="sdn_alt.csv",
+        description=(
+            "Official alternate-identity records linked to primary records "
+            "in the SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete SDN evidence series and preserve "
+            "independent source provenance."
+        ),
+    ),
+    "ofac_sdn_comments_csv": DataSource(
+        key="ofac_sdn_comments_csv",
+        name="OFAC SDN Extended Comment Records",
+        publisher="U.S. Department of the Treasury — OFAC",
+        url=_ofac_export_url("SDN_COMMENTS.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
+        format="csv",
+        filename="sdn_comments.csv",
+        description=(
+            "Official extended remarks records linked to primary records "
+            "in the SDN legacy CSV series."
+        ),
+        refresh_policy=(
+            "Acquire with the complete SDN evidence series and preserve "
+            "independent source provenance."
         ),
     ),
     "ofac_sdn_csv": DataSource(
         key="ofac_sdn_csv",
-        name="OFAC Specially Designated Nationals List",
+        name="OFAC Specially Designated Nationals Primary Records",
         publisher="U.S. Department of the Treasury — OFAC",
-        url=_http_url(
-            "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.CSV"
-        ),
-        source_page=_http_url("https://ofac.treasury.gov/sanctions-list-service"),
+        url=_ofac_export_url("SDN.CSV"),
+        source_page=_http_url(_OFAC_SOURCE_PAGE),
         format="csv",
         filename="sdn.csv",
         description=(
-            "Official Specially Designated Nationals and Blocked Persons "
-            "data file published by OFAC."
+            "Official primary records for the Specially Designated Nationals "
+            "and Blocked Persons legacy CSV series."
         ),
         refresh_policy=(
-            "Refresh before sanctions-screening analysis and preserve "
+            "Acquire with the complete SDN evidence series and preserve "
             "the exact digest used by each run."
         ),
     ),

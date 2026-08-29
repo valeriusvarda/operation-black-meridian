@@ -1,5 +1,11 @@
 """OFAC source-evidence contracts and deterministic processing."""
 
+from black_meridian.ofac.aggregate import (
+    OfacAggregationError,
+    OfacEntityEvidence,
+    OfacPrimaryRecordKey,
+    build_ofac_entity_evidence,
+)
 from black_meridian.ofac.contracts import (
     OfacPrimaryRecord,
     OfacSourceKey,
@@ -27,13 +33,17 @@ __all__ = [
     "OFAC_SDN_SOURCE_KEYS",
     "OfacAddressRecord",
     "OfacAddressSourceKey",
+    "OfacAggregationError",
     "OfacAliasRecord",
     "OfacAliasSourceKey",
+    "OfacEntityEvidence",
     "OfacEvidenceSet",
     "OfacPrimaryRecord",
+    "OfacPrimaryRecordKey",
     "OfacRelationParseError",
     "OfacSourceKey",
     "OfacSubjectKind",
+    "build_ofac_entity_evidence",
     "parse_ofac_address_snapshot",
     "parse_ofac_alias_snapshot",
 ]

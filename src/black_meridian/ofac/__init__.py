@@ -6,6 +6,12 @@ from black_meridian.ofac.aggregate import (
     OfacPrimaryRecordKey,
     build_ofac_entity_evidence,
 )
+from black_meridian.ofac.comments import (
+    OfacCommentParseError,
+    OfacCommentRecord,
+    OfacCommentSourceKey,
+    parse_ofac_comment_snapshot,
+)
 from black_meridian.ofac.contracts import (
     OfacPrimaryRecord,
     OfacSourceKey,
@@ -36,6 +42,9 @@ __all__ = [
     "OfacAggregationError",
     "OfacAliasRecord",
     "OfacAliasSourceKey",
+    "OfacCommentParseError",
+    "OfacCommentRecord",
+    "OfacCommentSourceKey",
     "OfacEntityEvidence",
     "OfacEvidenceSet",
     "OfacPrimaryRecord",
@@ -46,4 +55,5 @@ __all__ = [
     "build_ofac_entity_evidence",
     "parse_ofac_address_snapshot",
     "parse_ofac_alias_snapshot",
+    "parse_ofac_comment_snapshot",
 ]

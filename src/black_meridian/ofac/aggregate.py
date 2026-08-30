@@ -5,8 +5,15 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    model_validator,
+)
 
+from black_meridian.ofac.comments import (
+    OfacCommentRecord,
+)
 from black_meridian.ofac.contracts import (
     OfacPrimaryRecord,
     OfacSourceKey,
@@ -54,6 +61,8 @@ class OfacEntityEvidence(BaseModel):
         ...,
     ] = ()
 
+    comment: OfacCommentRecord | None = None
+
     @model_validator(mode="after")
     def validate_publisher_grounded_relations(
         self,
@@ -94,13 +103,18 @@ class OfacEntityEvidence(BaseModel):
 
             seen_alias_keys.add(alias_key)
 
+        if self.comment is not None and self.comment.parent_record_key != parent_key:
+            raise ValueError(
+                "OFAC comments spillover does not point to the aggregate primary record."
+            )
+
         return self
 
     @property
     def source_record_key(
         self,
     ) -> OfacPrimaryRecordKey:
-        """Return the source-scoped identity of the primary evidence occurrence."""
+        """Return source-scoped identity of the primary evidence occurrence."""
 
         return self.primary.source_record_key
 
@@ -120,6 +134,25 @@ class OfacEntityEvidence(BaseModel):
 
         return len(self.aliases)
 
+    @property
+    def has_remarks_spillover(
+        self,
+    ) -> bool:
+        """Return whether the primary remarks have publisher spillover evidence."""
+
+        return self.comment is not None
+
+    @property
+    def reconstructed_remarks_raw(
+        self,
+    ) -> str:
+        """Reconstruct complete remarks without inserting or removing characters."""
+
+        if self.comment is None:
+            return self.primary.remarks_raw
+
+        return self.primary.remarks_raw + self.comment.continuation_raw
+
 
 def build_ofac_entity_evidence(
     primary_records: tuple[
@@ -132,6 +165,10 @@ def build_ofac_entity_evidence(
     ] = (),
     alias_records: tuple[
         OfacAliasRecord,
+        ...,
+    ] = (),
+    comment_records: tuple[
+        OfacCommentRecord,
         ...,
     ] = (),
 ) -> tuple[
@@ -218,6 +255,41 @@ def build_ofac_entity_evidence(
 
         aliases_by_parent[parent_key].append(alias)
 
+    comments_by_parent: dict[
+        OfacPrimaryRecordKey,
+        OfacCommentRecord,
+    ] = {}
+
+    seen_comment_keys: set[tuple[str, str]] = set()
+
+    for comment in comment_records:
+        relation_key = comment.source_record_key
+
+        if relation_key in seen_comment_keys:
+            raise OfacAggregationError(
+                "OFAC aggregation contains duplicate "
+                "comments source-record identity: "
+                f"{relation_key!r}."
+            )
+
+        seen_comment_keys.add(relation_key)
+
+        parent_key = comment.parent_record_key
+
+        if parent_key not in primary_by_key:
+            raise OfacAggregationError(
+                f"OFAC comments spillover references a missing primary parent: {parent_key!r}."
+            )
+
+        if parent_key in comments_by_parent:
+            raise OfacAggregationError(
+                "OFAC aggregation contains more than "
+                "one comments spillover for primary: "
+                f"{parent_key!r}."
+            )
+
+        comments_by_parent[parent_key] = comment
+
     ordered_primaries = sorted(
         primary_records,
         key=lambda primary: (
@@ -250,6 +322,7 @@ def build_ofac_entity_evidence(
                 primary=primary,
                 addresses=ordered_addresses,
                 aliases=ordered_aliases,
+                comment=(comments_by_parent.get(primary_key)),
             )
         )
 

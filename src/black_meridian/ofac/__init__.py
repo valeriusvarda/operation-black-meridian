@@ -23,6 +23,13 @@ from black_meridian.ofac.evidence import (
     OFAC_SDN_SOURCE_KEYS,
     OfacEvidenceSet,
 )
+from black_meridian.ofac.exporter import (
+    OfacExportError,
+    serialize_ofac_csv,
+    serialize_ofac_json,
+    write_ofac_csv,
+    write_ofac_json,
+)
 from black_meridian.ofac.relations import (
     OfacAddressRecord,
     OfacAddressSourceKey,
@@ -47,6 +54,7 @@ __all__ = [
     "OfacCommentSourceKey",
     "OfacEntityEvidence",
     "OfacEvidenceSet",
+    "OfacExportError",
     "OfacPrimaryRecord",
     "OfacPrimaryRecordKey",
     "OfacRelationParseError",
@@ -56,4 +64,8 @@ __all__ = [
     "parse_ofac_address_snapshot",
     "parse_ofac_alias_snapshot",
     "parse_ofac_comment_snapshot",
+    "serialize_ofac_csv",
+    "serialize_ofac_json",
+    "write_ofac_csv",
+    "write_ofac_json",
 ]

@@ -19,6 +19,8 @@ from black_meridian.fatf.workflow import (
     FatfWorkflowError,
     build_fatf_evidence,
 )
+from black_meridian.ofac.cli import ofac_app
+
 
 app = typer.Typer(
     help="Operation Black Meridian financial intelligence toolkit.",
@@ -43,6 +45,11 @@ app.add_typer(
 app.add_typer(
     fatf_app,
     name="fatf",
+)
+
+app.add_typer(
+    ofac_app,
+    name="ofac",
 )
 
 

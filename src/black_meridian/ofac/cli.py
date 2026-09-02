@@ -17,6 +17,10 @@ from black_meridian.data_sources import (
 from black_meridian.ofac.evidence import (
     OFAC_EVIDENCE_SOURCE_KEYS,
 )
+from black_meridian.ofac.visualization import (
+    OfacVisualizationError,
+    build_ofac_visualizations,
+)
 from black_meridian.ofac.workflow import (
     OfacWorkflowError,
     build_ofac_evidence,
@@ -146,3 +150,63 @@ def refresh_ofac_command(
         manifest_path,
     ) in manifest_paths:
         typer.echo(f"Manifest {source_key}: {manifest_path}")
+
+
+@ofac_app.command("visualize")
+def visualize_ofac_command(
+    evidence_path: Annotated[
+        Path,
+        typer.Option(
+            "--evidence",
+            help=("Deterministic OFAC JSON evidence produced by the trusted workflow."),
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = Path("data/reference/ofac/ofac_entities.json"),
+    output_dir: Annotated[
+        Path,
+        typer.Option(
+            "--output-dir",
+            "-o",
+            help=("Directory for generated OFAC visual evidence artifacts."),
+            file_okay=False,
+            dir_okay=True,
+        ),
+    ] = Path("reports/generated/ofac"),
+) -> None:
+    """Render reproducible visual projections of validated OFAC evidence."""
+
+    try:
+        result = build_ofac_visualizations(
+            evidence_path,
+            output_dir,
+        )
+
+    except (
+        OSError,
+        OfacVisualizationError,
+    ) as exc:
+        typer.echo(
+            f"OFAC visualization failed: {exc}",
+            err=True,
+        )
+
+        raise typer.Exit(code=1) from exc
+
+    typer.echo("OFAC visualization completed.")
+
+    typer.echo(f"Entities: {result.entity_count}")
+
+    typer.echo(f"Evidence JSON SHA-256: {result.evidence_json_sha256}")
+
+    typer.echo(f"Evidence set SHA-256: {result.evidence_set_sha256}")
+
+    typer.echo(f"Provenance graph: {result.provenance_svg_path}")
+
+    typer.echo(f"Subject composition: {result.subject_svg_path}")
+
+    typer.echo(f"Raw program contexts: {result.program_svg_path}")
+
+    typer.echo(f"Visual manifest: {result.manifest_path}")

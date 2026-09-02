@@ -1,6 +1,7 @@
 """Deterministic contracts for complete OFAC source evidence sets."""
 
 from collections import Counter
+from collections.abc import Iterable
 from hashlib import sha256
 from typing import Self
 
@@ -32,7 +33,9 @@ _EXPECTED_SOURCE_KEYS = frozenset(OFAC_EVIDENCE_SOURCE_KEYS)
 _FINGERPRINT_DOMAIN = "operation-black-meridian/ofac-evidence-set/v1"
 
 
-def _frame_text(value: str) -> bytes:
+def _frame_text(
+    value: str,
+) -> bytes:
     """Encode text with deterministic length framing."""
 
     encoded = value.encode("utf-8")
@@ -47,26 +50,144 @@ def _frame_text(value: str) -> bytes:
     )
 
 
+def fingerprint_ofac_source_set(
+    sources: Iterable[
+        tuple[
+            str,
+            str,
+            int,
+        ]
+    ],
+) -> str:
+    """Fingerprint one complete portable OFAC source-evidence composition."""
+
+    rows = tuple(sources)
+
+    source_keys = tuple(
+        source_key
+        for (
+            source_key,
+            _,
+            _,
+        ) in rows
+    )
+
+    source_key_counts = Counter(source_keys)
+
+    duplicate_source_keys = sorted(
+        source_key
+        for (
+            source_key,
+            count,
+        ) in source_key_counts.items()
+        if count > 1
+    )
+
+    if duplicate_source_keys:
+        raise ValueError(
+            "OFAC source fingerprint contains "
+            "duplicate source_key values: " + ", ".join(duplicate_source_keys) + "."
+        )
+
+    actual_source_keys = frozenset(source_keys)
+
+    missing_source_keys = sorted(_EXPECTED_SOURCE_KEYS - actual_source_keys)
+
+    unexpected_source_keys = sorted(actual_source_keys - _EXPECTED_SOURCE_KEYS)
+
+    if missing_source_keys or unexpected_source_keys:
+        problems: list[str] = []
+
+        if missing_source_keys:
+            problems.append("missing: " + ", ".join(missing_source_keys))
+
+        if unexpected_source_keys:
+            problems.append("unexpected: " + ", ".join(unexpected_source_keys))
+
+        raise ValueError(
+            "OFAC source fingerprint requires "
+            "exactly one approved source identity; " + "; ".join(problems) + "."
+        )
+
+    by_source_key: dict[
+        str,
+        tuple[
+            str,
+            int,
+        ],
+    ] = {}
+
+    for (
+        source_key,
+        source_sha256,
+        byte_size,
+    ) in rows:
+        if len(source_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in source_sha256
+        ):
+            raise ValueError(
+                f"OFAC source fingerprint requires lowercase SHA-256 for {source_key!r}."
+            )
+
+        if byte_size < 1:
+            raise ValueError(
+                f"OFAC source fingerprint requires positive byte size for {source_key!r}."
+            )
+
+        by_source_key[source_key] = (
+            source_sha256,
+            byte_size,
+        )
+
+    digest = sha256()
+
+    digest.update(_frame_text(_FINGERPRINT_DOMAIN))
+
+    for source_key in OFAC_EVIDENCE_SOURCE_KEYS:
+        (
+            source_sha256,
+            byte_size,
+        ) = by_source_key[source_key]
+
+        digest.update(_frame_text(source_key))
+
+        digest.update(_frame_text(source_sha256))
+
+        digest.update(_frame_text(str(byte_size)))
+
+    return digest.hexdigest()
+
+
 class OfacEvidenceSet(BaseModel):
-    """Immutable collection of the complete approved OFAC legacy CSV evidence."""
+    """Immutable collection of complete approved OFAC CSV evidence."""
 
     model_config = ConfigDict(
         extra="forbid",
         frozen=True,
     )
 
-    snapshots: tuple[SourceSnapshot, ...]
+    snapshots: tuple[
+        SourceSnapshot,
+        ...,
+    ]
 
     @model_validator(mode="after")
-    def validate_complete_source_boundary(self) -> Self:
-        """Require exactly one snapshot for every approved OFAC evidence source."""
+    def validate_complete_source_boundary(
+        self,
+    ) -> Self:
+        """Require exactly one snapshot for every approved source."""
 
         source_keys = tuple(snapshot.source_key for snapshot in self.snapshots)
 
         source_key_counts = Counter(source_keys)
 
         duplicate_source_keys = sorted(
-            source_key for source_key, count in source_key_counts.items() if count > 1
+            source_key
+            for (
+                source_key,
+                count,
+            ) in source_key_counts.items()
+            if count > 1
         )
 
         if duplicate_source_keys:
@@ -106,8 +227,11 @@ class OfacEvidenceSet(BaseModel):
     @property
     def ordered_snapshots(
         self,
-    ) -> tuple[SourceSnapshot, ...]:
-        """Return snapshots in the canonical evidence-set order."""
+    ) -> tuple[
+        SourceSnapshot,
+        ...,
+    ]:
+        """Return snapshots in canonical evidence-set order."""
 
         snapshots_by_source_key = {snapshot.source_key: snapshot for snapshot in self.snapshots}
 
@@ -116,24 +240,26 @@ class OfacEvidenceSet(BaseModel):
         )
 
     @property
-    def source_count(self) -> int:
-        """Return the number of source snapshots in the evidence set."""
+    def source_count(
+        self,
+    ) -> int:
+        """Return source snapshot count."""
 
         return len(self.snapshots)
 
     @property
-    def evidence_set_sha256(self) -> str:
-        """Fingerprint the exact canonical source-key/content combination."""
+    def evidence_set_sha256(
+        self,
+    ) -> str:
+        """Fingerprint exact canonical source/content composition."""
 
-        digest = sha256()
-
-        digest.update(_frame_text(_FINGERPRINT_DOMAIN))
-
-        for snapshot in self.ordered_snapshots:
-            digest.update(_frame_text(snapshot.source_key))
-
-            digest.update(_frame_text(snapshot.sha256))
-
-            digest.update(_frame_text(str(snapshot.byte_size)))
-
-        return digest.hexdigest()
+        return fingerprint_ofac_source_set(
+            (
+                (
+                    snapshot.source_key,
+                    snapshot.sha256,
+                    snapshot.byte_size,
+                )
+                for snapshot in self.snapshots
+            )
+        )

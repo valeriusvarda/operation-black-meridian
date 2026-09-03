@@ -304,6 +304,33 @@ The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF 
 
 ---
 
+## OFAC Entity Intelligence
+
+The OFAC workstream implements a provenance-bound entity-evidence adapter over the complete approved legacy SDN and Consolidated Non-SDN CSV series.
+
+```text
+OFFICIAL OFAC PUBLICATIONS
+          ↓
+APPROVED SOURCE REGISTRY
+          ↓
+8 SOURCE SNAPSHOTS
+          ↓
+SOURCE SHA-256 + BYTE SIZE
+          ↓
+DETERMINISTIC EVIDENCE-SET IDENTITY
+          ↓
+PRIMARY + ADDRESS + ALIAS + COMMENTS PARSERS
+          ↓
+SOURCE-SCOPED PUBLISHER IDENTITY
+          ↓
+PUBLISHER-GROUNDED ENTITY EVIDENCE
+          ↓
+DETERMINISTIC JSON / CSV
+          ↓
+OPERATOR CLI
+          ↓
+PROVENANCE-BOUND VISUAL EVIDENCE
+
 ## Current Capability Boundary
 
 | Capability | Status |
@@ -357,6 +384,14 @@ uv run black-meridian sources list
 ```bash
 uv run black-meridian sources fetch ofac_sdn_csv
 ```
+
+### Inspect OFAC commands
+
+```bash
+uv run black-meridian ofac --help
+uv run black-meridian ofac refresh --help
+uv run black-meridian ofac visualize --help
+
 
 ### Inspect FATF commands
 

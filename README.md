@@ -36,7 +36,6 @@ It is being built as an **evidence system**.
 ## The Problem
 
 Financial intelligence rarely comes from one clean dataset.
-
 A defensible assessment may require the interaction of:
 
 - official jurisdiction-risk classifications,
@@ -303,7 +302,6 @@ CLI ORCHESTRATION
 The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF jurisdiction risk intelligence**.
 
 ---
-
 ## OFAC Entity Intelligence
 
 The OFAC workstream implements a provenance-bound entity-evidence adapter over the complete approved legacy SDN and Consolidated Non-SDN CSV series.
@@ -330,41 +328,215 @@ DETERMINISTIC JSON / CSV
 OPERATOR CLI
           ↓
 PROVENANCE-BOUND VISUAL EVIDENCE
+```
+
+### Approved OFAC evidence boundary
+
+The adapter treats the OFAC legacy publications as related publisher artifacts rather than assuming that one primary CSV represents a complete entity record.
+
+The approved SDN series consists of:
+
+```text
+SDN.CSV
+ADD.CSV
+ALT.CSV
+SDN_COMMENTS.CSV
+```
+
+The approved Consolidated Non-SDN series consists of:
+
+```text
+CONS_PRIM.CSV
+CONS_ADD.CSV
+CONS_ALT.CSV
+CONS_COMMENTS.CSV
+```
+
+Every artifact is preserved as an independent `SourceSnapshot` with its own acquisition provenance, byte size, SHA-256 digest, timestamp, and approved source identity.
+
+The complete eight-source composition is represented by an immutable `OfacEvidenceSet`.
+
+Its evidence-set fingerprint is derived deterministically from:
+
+* canonical source-key ordering,
+* exact source SHA-256 values,
+* and exact source byte sizes.
+
+### Source-scoped publisher identity
+
+The canonical occurrence identity is deliberately defined as:
+
+```text
+(source_key, publisher_record_id)
+```
+
+A bare OFAC linking integer is not treated as a globally unique real-world entity identifier.
+
+This prevents records appearing in different approved publication families from being silently collapsed merely because their publisher identifiers overlap.
+
+### Publisher-grounded relations
+
+The entity evidence model preserves the publisher-defined relational structure:
+
+```text
+PRIMARY
+  │
+  ├── ADDRESS   1:N
+  ├── ALIAS     1:N
+  └── COMMENTS  0..1
+```
+
+Addresses and aliases are attached only through publisher-provided linking identifiers.
+
+Orphan relations fail closed.
+
+Comments spillover remains distinct from the primary remarks field while allowing exact reconstruction without inserting analytical text between publisher fragments.
+
+### Deterministic evidence outputs
+
+Validated OFAC evidence can be serialized as:
+
+```text
+ofac_entities.json
+ofac_entities.csv
+```
+
+The JSON representation preserves:
+
+* portable source provenance,
+* evidence-set identity,
+* source-scoped primary identity,
+* raw publisher fields,
+* deterministic subject classification,
+* addresses,
+* aliases,
+* comments spillover,
+* row fingerprints,
+* source SHA-256 lineage,
+* and reconstructed remarks.
+
+The CSV representation emits one deterministic row per source-scoped primary evidence occurrence and retains nested relation evidence through deterministic embedded JSON fields.
+
+Generated source and evidence artifacts remain outside Git history.
+
+### Operational workflow
+
+The operator-facing workflow acquires the complete approved source series through the existing trusted acquisition boundary.
+
+```text
+APPROVED SOURCE REGISTRY
+          ↓
+TRUSTED ACQUISITION
+          ↓
+8 SourceSnapshot OBJECTS
+          ↓
+OfacEvidenceSet
+          ↓
+STRUCTURAL PARSING
+          ↓
+RELATION RECONCILIATION
+          ↓
+ENTITY EVIDENCE
+          ↓
+JSON / CSV EXPORT
+          ↓
+OPERATOR SUMMARY
+```
+
+The workflow surfaces source identities, source-level SHA-256 values, byte counts, acquisition metadata, evidence-set identity, entity counts, relation counts, manifests, and generated output locations.
+
+### Provenance-bound visual evidence
+
+The visualization layer consumes the validated exported OFAC JSON rather than independently reparsing the raw publisher files.
+
+Before rendering, it independently reconciles:
+
+* the complete eight-source boundary,
+* evidence-set SHA-256,
+* source-level SHA-256 values,
+* source-scoped primary identities,
+* relation parent identities,
+* source-derived subject classifications,
+* and reconstructed remarks lineage.
+
+Generated artifacts include:
+
+```text
+ofac_provenance_graph.svg
+ofac_subject_composition.svg
+ofac_raw_program_contexts.svg
+ofac_visual_manifest.json
+```
+
+The visual manifest binds each rendered artifact to the exact exported evidence JSON through SHA-256.
+
+The raw program-context visualization counts exact publisher field values. It does not silently split, normalize, or reinterpret composite program strings.
+
+### Analytical boundary
+
+This adapter does **not** implement:
+
+* fuzzy sanctions-name matching,
+* probabilistic person or organization resolution,
+* GLEIF enrichment,
+* transaction-level sanctions conclusions,
+* autonomous compliance decisions,
+* legal interpretation,
+* guilt determination,
+* criminal-intent inference.
+
+A canonical OFAC record represents publisher-grounded source evidence.
+
+It is not an analytical verdict.
+
+The governing workstream is GitHub Issue `#23`: **Entity intelligence: canonicalize OFAC sanctions records with provenance**.
+
+---
 
 ## Current Capability Boundary
 
-| Capability | Status |
-|---|---|
-| Reproducible Python 3.13 package | Implemented |
-| Locked dependency environment | Implemented |
-| Ruff linting and formatting | Implemented |
-| Strict MyPy validation | Implemented |
-| Pytest regression suite | Implemented |
-| Coverage evidence | Implemented |
-| Hosted GitHub Actions quality gate | Implemented |
-| Wheel and source-distribution builds | Implemented |
-| Trusted source registry | Implemented |
-| Integrity-aware direct HTTP acquisition | Implemented |
-| SHA-256 source hashing | Implemented |
-| Streaming byte accounting | Implemented |
-| Atomic source replacement | Implemented |
-| Machine-readable provenance manifests | Implemented |
-| Acquisition-method classification | Implemented |
-| Source discovery CLI | Implemented |
-| Approved-source retrieval CLI | Implemented |
-| FATF parser / normalizer / exporter | Implemented |
-| FATF integrity-reconciliation workflow | Implemented |
-| FATF CLI orchestration | Implemented |
-| Challenge-aware operator import | Implemented |
-| Canonical OFAC intelligence models | Planned |
-| GLEIF entity enrichment | Planned |
-| Transaction-behavior engine | Planned |
-| Counterparty network intelligence | Planned |
-| Explainable risk attribution | Planned |
-| Operator case-management surface | Planned |
-| Visual intelligence suite | Planned |
+| Capability                                  | Status      |
+| ------------------------------------------- | ----------- |
+| Reproducible Python 3.13 package            | Implemented |
+| Locked dependency environment               | Implemented |
+| Ruff linting and formatting                 | Implemented |
+| Strict MyPy validation                      | Implemented |
+| Pytest regression suite                     | Implemented |
+| Coverage evidence                           | Implemented |
+| Hosted GitHub Actions quality gate          | Implemented |
+| Wheel and source-distribution builds        | Implemented |
+| Trusted source registry                     | Implemented |
+| Integrity-aware direct HTTP acquisition     | Implemented |
+| SHA-256 source hashing                      | Implemented |
+| Streaming byte accounting                   | Implemented |
+| Atomic source replacement                   | Implemented |
+| Machine-readable provenance manifests       | Implemented |
+| Acquisition-method classification           | Implemented |
+| Source discovery CLI                        | Implemented |
+| Approved-source retrieval CLI               | Implemented |
+| FATF parser / normalizer / exporter         | Implemented |
+| FATF integrity-reconciliation workflow      | Implemented |
+| FATF CLI orchestration                      | Implemented |
+| Challenge-aware operator import             | Implemented |
+| Complete OFAC legacy source-series registry | Implemented |
+| OFAC evidence-set fingerprinting            | Implemented |
+| Typed OFAC primary contracts                | Implemented |
+| OFAC address / alias / comments relations   | Implemented |
+| Publisher-grounded OFAC entity evidence     | Implemented |
+| Deterministic OFAC JSON / CSV evidence      | Implemented |
+| OFAC integrity-reconciliation workflow      | Implemented |
+| `ofac refresh` CLI orchestration            | Implemented |
+| Provenance-bound OFAC visual evidence       | Implemented |
+| `ofac visualize` CLI orchestration          | Implemented |
+| GLEIF entity enrichment                     | Planned     |
+| Transaction-behavior engine                 | Planned     |
+| Counterparty network intelligence           | Planned     |
+| Explainable risk attribution                | Planned     |
+| Operator case-management surface            | Planned     |
+| Broader visual intelligence suite           | Planned     |
 
 ---
+
 ## Command Surface
 
 ### Inspect the application
@@ -391,7 +563,29 @@ uv run black-meridian sources fetch ofac_sdn_csv
 uv run black-meridian ofac --help
 uv run black-meridian ofac refresh --help
 uv run black-meridian ofac visualize --help
+```
 
+### Build current OFAC evidence
+
+```bash
+uv run black-meridian ofac refresh \
+  --source-dir data/raw/external \
+  --output-dir data/reference/ofac
+```
+
+The refresh path retrieves the complete approved OFAC source series through the trusted acquisition boundary, persists source provenance manifests, constructs the complete evidence-set identity, parses publisher-grounded primary and relation records, rejects provenance or relational inconsistencies, and emits deterministic JSON and CSV evidence.
+
+### Render OFAC visual evidence
+
+```bash
+uv run black-meridian ofac visualize \
+  --evidence data/reference/ofac/ofac_entities.json \
+  --output-dir reports/generated/ofac
+```
+
+The visualization path validates the exported evidence before rendering and produces SHA-256-bound visual artifacts under `reports/generated/ofac`.
+
+Generated visual evidence remains outside Git history.
 
 ### Inspect FATF commands
 
@@ -419,6 +613,8 @@ uv run black-meridian fatf import \
 The operator-assisted path imports the exact operator-provided bytes into canonical trusted storage, records `operator_import` provenance, persists the acquisition manifest, and executes the same integrity-checked FATF evidence workflow.
 
 This path does not bypass upstream access controls and does not represent the imported artifact as a direct HTTP retrieval.
+
+---
 
 ---
 
@@ -525,6 +721,18 @@ operation-black-meridian/
 │       │   ├── normalizer.py
 │       │   ├── parser.py
 │       │   └── workflow.py
+│       ├── ofac/
+│       │   ├── __init__.py
+│       │   ├── aggregate.py
+│       │   ├── cli.py
+│       │   ├── comments.py
+│       │   ├── contracts.py
+│       │   ├── evidence.py
+│       │   ├── exporter.py
+│       │   ├── parser.py
+│       │   ├── relations.py
+│       │   ├── visualization.py
+│       │   └── workflow.py
 │       └── cli.py
 ├── tests/
 │   ├── fixtures/
@@ -533,8 +741,20 @@ operation-black-meridian/
 │   ├── test_fatf_normalizer.py
 │   ├── test_fatf_parser.py
 │   ├── test_fatf_workflow.py
+│   ├── test_ofac_aggregate.py
+│   ├── test_ofac_cli.py
+│   ├── test_ofac_comments.py
+│   ├── test_ofac_contracts.py
+│   ├── test_ofac_evidence.py
+│   ├── test_ofac_exporter.py
+│   ├── test_ofac_parser.py
+│   ├── test_ofac_relations.py
+│   ├── test_ofac_visualization.py
+│   ├── test_ofac_workflow.py
 │   ├── test_package_contract.py
+│   ├── test_source_fetcher.py
 │   ├── test_source_importer.py
+│   ├── test_source_models.py
 │   └── test_source_registry.py
 ├── pyproject.toml
 ├── uv.lock

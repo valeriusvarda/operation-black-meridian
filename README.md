@@ -302,6 +302,7 @@ CLI ORCHESTRATION
 The governing workstream is GitHub Issue `#7`: **Real data: ingest current FATF jurisdiction risk intelligence**.
 
 ---
+
 ## OFAC Entity Intelligence
 
 The OFAC workstream implements a provenance-bound entity-evidence adapter over the complete approved legacy SDN and Consolidated Non-SDN CSV series.
@@ -613,8 +614,6 @@ uv run black-meridian fatf import \
 The operator-assisted path imports the exact operator-provided bytes into canonical trusted storage, records `operator_import` provenance, persists the acquisition manifest, and executes the same integrity-checked FATF evidence workflow.
 
 This path does not bypass upstream access controls and does not represent the imported artifact as a direct HTTP retrieval.
-
----
 
 ---
 
